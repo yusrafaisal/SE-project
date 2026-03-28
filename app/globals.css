@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-outfit: 'Outfit', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #fdfaf4;
+  color: #1a1a1a;
+  font-family: var(--font-outfit);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f2e5c4; }
+::-webkit-scrollbar-thumb { background: #d96b3f; border-radius: 99px; }
+
+/* selection */
+::selection { background: #d96b3f22; color: #d96b3f; }
+
+@layer components {
+
+  .btn-primary {
+    @apply bg-ember-500 text-white font-body font-medium px-6 py-3 rounded-xl
+           transition-all duration-200 hover:bg-ember-600 hover:-translate-y-0.5
+           hover:shadow-lg hover:shadow-ember-500/20 active:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply border border-cream-200 text-warm-gray font-body font-medium px-6 py-3 rounded-xl
+           transition-all duration-200 hover:border-ember-400 hover:text-ember-500;
+  }
+
+  .btn-danger {
+    @apply text-red-400 text-sm font-medium px-3 py-2 rounded-lg
+           transition-all duration-150 hover:bg-red-50 hover:text-red-500;
+  }
+
+  .card {
+    @apply bg-white border border-cream-200 rounded-2xl overflow-hidden
+           transition-all duration-300 hover:-translate-y-1
+           hover:shadow-xl hover:border-cream-100;
+  }
+
+  .input-field {
+    @apply w-full bg-cream-50 border border-cream-200 text-charcoal rounded-xl
+           px-4 py-3 font-body font-light text-sm outline-none
+           transition-all duration-200 placeholder:text-warm-gray/60
+           focus:border-ember-400 focus:ring-2 focus:ring-ember-400/15;
+  }
+
+  .label {
+    @apply text-[11px] font-medium tracking-widest uppercase text-warm-gray;
+  }
+
+  .badge {
+    @apply text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1 rounded-md;
+  }
+
+  .section-tag {
+    @apply text-ember-500 text-xs font-semibold tracking-[0.2em] uppercase;
+  }
+}
