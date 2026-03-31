@@ -5,25 +5,14 @@ import { Search, RefreshCw } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import MenuCard from '@/components/MenuCard'
-import MenuModal from '@/components/MenuModal'
-import DeleteDialog from '@/components/DeleteDialog'
 import SkeletonCard from '@/components/SkeletonCard'
 import ToastContainer, { ToastMessage, ToastType } from '@/components/Toast'
-import { api, MenuItem, MenuItemCreate } from '@/lib/api'
+import { api, MenuItem } from '@/lib/api'
 
-export default function Home() {
+export default function CustomerMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [apiOnline, setApiOnline] = useState<boolean | null>(null)
-
-  // Modal state
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editItem, setEditItem] = useState<MenuItem | null>(null)
-  const [modalLoading, setModalLoading] = useState(false)
-
-  // Delete state
-  const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null)
-  const [deleteLoading, setDeleteLoading] = useState(false)
 
   // Filters
   const [search, setSearch] = useState('')
@@ -42,7 +31,6 @@ export default function Home() {
     setToasts(prev => prev.filter(t => t.id !== id))
   }, [])
 
-  // Fetch
   const fetchMenu = useCallback(async () => {
     setLoading(true)
     try {
@@ -51,15 +39,16 @@ export default function Home() {
       setApiOnline(true)
     } catch {
       setApiOnline(false)
-      toast('Could not connect to API. Make sure backend is running.', 'error')
+      toast('Could not connect to API. Please try again shortly.', 'error')
     } finally {
       setLoading(false)
     }
   }, [toast])
 
-  useEffect(() => { fetchMenu() }, [fetchMenu])
+  useEffect(() => {
+    fetchMenu()
+  }, [fetchMenu])
 
-  // Categories derived from data
   const categories = useMemo(() => {
     const cats = items
       .map(i => i.category)
@@ -67,7 +56,6 @@ export default function Home() {
     return ['All', ...cats]
   }, [items])
 
-  // Filtered items
   const filtered = useMemo(() => {
     return items.filter(item => {
       const matchSearch = !search ||
@@ -82,79 +70,26 @@ export default function Home() {
     })
   }, [items, search, activeCategory, availFilter])
 
-  // CRUD handlers
-  const handleSubmit = async (data: MenuItemCreate) => {
-    setModalLoading(true)
-    try {
-      if (editItem) {
-        await api.updateItem(editItem.id, data)
-        toast('Item updated successfully', 'success')
-      } else {
-        await api.addItem(data)
-        toast('Item added to menu', 'success')
-      }
-      setModalOpen(false)
-      setEditItem(null)
-      await fetchMenu()
-    } catch {
-      toast('Something went wrong. Try again.', 'error')
-    } finally {
-      setModalLoading(false)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!deleteItem) return
-    setDeleteLoading(true)
-    try {
-      await api.deleteItem(deleteItem.id)
-      toast(`"${deleteItem.name}" removed from menu`, 'success')
-      setDeleteItem(null)
-      await fetchMenu()
-    } catch {
-      toast('Failed to delete item. Try again.', 'error')
-    } finally {
-      setDeleteLoading(false)
-    }
-  }
-
-  const openAdd = () => {
-    setEditItem(null)
-    setModalOpen(true)
-  }
-
-  const openEdit = (item: MenuItem) => {
-    setEditItem(item)
-    setModalOpen(true)
-  }
-
   return (
     <div className="min-h-screen bg-cream-50">
-      <Navbar apiOnline={apiOnline} />
+      <Navbar apiOnline={apiOnline} mode="customer" />
 
-      <Hero items={items} onAddClick={openAdd} />
+      <Hero items={items} mode="customer" />
 
-      {/* Content */}
       <main className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
-
-        {/* Filter bar */}
         <div className="flex flex-col gap-5 mb-8">
-
-          {/* Search + filter row */}
           <div className="flex flex-wrap gap-3 items-center">
-            {/* Search */}
             <div className="relative flex-1 min-w-[220px] max-w-sm">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray/60 pointer-events-none" />
               <input
                 type="text"
                 className="input-field pl-10"
-                placeholder="Search dishes…"
+                placeholder="Search dishes..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
             </div>
 
-            {/* Availability */}
             <div className="flex items-center gap-1 bg-white border border-cream-200 rounded-xl p-1">
               {(['all', 'available', 'unavailable'] as const).map(v => (
                 <button
@@ -171,7 +106,6 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Refresh */}
             <button
               onClick={fetchMenu}
               className="w-10 h-10 rounded-xl border border-cream-200 flex items-center justify-center text-warm-gray hover:text-ember-500 hover:border-ember-300 transition-all ml-auto"
@@ -179,14 +113,8 @@ export default function Home() {
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
-
-            {/* Add button */}
-            <button onClick={openAdd} className="btn-primary text-sm">
-              + Add Item
-            </button>
           </div>
 
-          {/* Category tabs */}
           <div className="flex gap-2 flex-wrap">
             {categories.map(cat => (
               <button
@@ -209,7 +137,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Results count */}
         {!loading && (
           <p className="text-sm text-warm-gray mb-6 font-light">
             Showing{' '}
@@ -225,7 +152,6 @@ export default function Home() {
           </p>
         )}
 
-        {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
@@ -240,14 +166,9 @@ export default function Home() {
             </h3>
             <p className="text-warm-gray text-sm font-light mb-6">
               {items.length === 0
-                ? 'Your menu is empty. Add your first dish!'
+                ? 'Menu is currently empty. Please check back later.'
                 : 'Try adjusting your search or filters.'}
             </p>
-            {items.length === 0 && (
-              <button onClick={openAdd} className="btn-primary text-sm">
-                Add First Item
-              </button>
-            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -256,42 +177,24 @@ export default function Home() {
                 key={item.id}
                 item={item}
                 index={i}
-                onEdit={openEdit}
-                onDelete={setDeleteItem}
+                readOnly
               />
             ))}
           </div>
         )}
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-cream-200 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="font-display text-charcoal font-medium">Saveur</span>
           <p className="text-xs text-warm-gray font-light">
-            Restaurant Management System — Menu Module
+            Customer Menu
           </p>
           <p className="text-xs text-warm-gray/60">
             API: {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}
           </p>
         </div>
       </footer>
-
-      {/* Modals */}
-      <MenuModal
-        open={modalOpen}
-        editItem={editItem}
-        onClose={() => { setModalOpen(false); setEditItem(null) }}
-        onSubmit={handleSubmit}
-        loading={modalLoading}
-      />
-
-      <DeleteDialog
-        item={deleteItem}
-        onCancel={() => setDeleteItem(null)}
-        onConfirm={handleDelete}
-        loading={deleteLoading}
-      />
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>

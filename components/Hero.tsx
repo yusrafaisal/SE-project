@@ -4,10 +4,11 @@ import { MenuItem } from '@/lib/api'
 
 interface HeroProps {
   items: MenuItem[]
-  onAddClick: () => void
+  onAddClick?: () => void
+  mode?: 'admin' | 'customer'
 }
 
-export default function Hero({ items, onAddClick }: HeroProps) {
+export default function Hero({ items, onAddClick, mode = 'admin' }: HeroProps) {
   const totalItems = items.length
   const available = items.filter(i => i.is_available).length
   const categories = [...new Set(items.map(i => i.category))].length
@@ -43,22 +44,26 @@ export default function Hero({ items, onAddClick }: HeroProps) {
           {/* Heading */}
           <div>
             <p className="text-ember-400 text-xs font-semibold tracking-[0.25em] uppercase mb-3">
-              Menu Management
+              {mode === 'admin' ? 'Menu Management' : 'Our Menu'}
             </p>
             <h1 className="font-display text-5xl lg:text-6xl font-medium leading-[1.05] mb-4">
-              Craft your <br />
+              {mode === 'admin' ? 'Craft your' : 'Discover our'} <br />
               <em className="text-ember-400 not-italic">perfect menu</em>
             </h1>
             <p className="text-white/50 font-body font-light text-base max-w-md leading-relaxed">
-              Add, edit, and manage every dish. Changes reflect immediately for your customers.
+              {mode === 'admin'
+                ? 'Add, edit, and manage every dish. Changes reflect immediately for your customers.'
+                : 'Browse categories, check availability, and explore dishes before placing your order.'}
             </p>
 
             <div className="mt-8 flex gap-3">
-              <button onClick={onAddClick} className="btn-primary text-sm">
-                + Add New Item
-              </button>
+              {mode === 'admin' && onAddClick && (
+                <button onClick={onAddClick} className="btn-primary text-sm">
+                  + Add New Item
+                </button>
+              )}
               <button className="px-6 py-3 rounded-xl border border-white/20 text-white/70 text-sm font-medium hover:border-white/40 hover:text-white transition-all duration-200">
-                View Guide
+                {mode === 'admin' ? 'View Guide' : 'View Specials'}
               </button>
             </div>
           </div>

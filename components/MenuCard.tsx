@@ -8,11 +8,12 @@ import { MenuItem } from '@/lib/api'
 interface MenuCardProps {
   item: MenuItem
   index: number
-  onEdit: (item: MenuItem) => void
-  onDelete: (item: MenuItem) => void
+  onEdit?: (item: MenuItem) => void
+  onDelete?: (item: MenuItem) => void
+  readOnly?: boolean
 }
 
-export default function MenuCard({ item, index, onEdit, onDelete }: MenuCardProps) {
+export default function MenuCard({ item, index, onEdit, onDelete, readOnly = false }: MenuCardProps) {
   const [imgError, setImgError] = useState(false)
 
   return (
@@ -76,23 +77,24 @@ export default function MenuCard({ item, index, onEdit, onDelete }: MenuCardProp
           {item.description || 'No description provided.'}
         </p>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-3 border-t border-cream-100">
-          <button
-            onClick={() => onEdit(item)}
-            className="flex items-center gap-1.5 text-sm font-medium text-warm-gray hover:text-ember-500 transition-colors duration-150 px-3 py-1.5 rounded-lg hover:bg-ember-500/8"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-            Edit
-          </button>
-          <button
-            onClick={() => onDelete(item)}
-            className="flex items-center gap-1.5 text-sm font-medium text-warm-gray hover:text-red-500 transition-colors duration-150 px-3 py-1.5 rounded-lg hover:bg-red-50 ml-auto"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            Delete
-          </button>
-        </div>
+        {!readOnly && onEdit && onDelete && (
+          <div className="flex items-center gap-2 pt-3 border-t border-cream-100">
+            <button
+              onClick={() => onEdit(item)}
+              className="flex items-center gap-1.5 text-sm font-medium text-warm-gray hover:text-ember-500 transition-colors duration-150 px-3 py-1.5 rounded-lg hover:bg-ember-500/8"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(item)}
+              className="flex items-center gap-1.5 text-sm font-medium text-warm-gray hover:text-red-500 transition-colors duration-150 px-3 py-1.5 rounded-lg hover:bg-red-50 ml-auto"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

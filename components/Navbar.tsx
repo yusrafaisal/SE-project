@@ -5,9 +5,10 @@ import { Wifi, WifiOff } from 'lucide-react'
 
 interface NavbarProps {
   apiOnline: boolean | null
+  mode?: 'admin' | 'customer'
 }
 
-export default function Navbar({ apiOnline }: NavbarProps) {
+export default function Navbar({ apiOnline, mode = 'admin' }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function Navbar({ apiOnline }: NavbarProps) {
               Saveur
             </span>
             <span className="ml-2 text-[10px] font-semibold tracking-[0.2em] uppercase text-warm-gray">
-              Admin
+              {mode === 'admin' ? 'Admin' : 'Customer'}
             </span>
           </div>
         </div>
