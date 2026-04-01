@@ -160,11 +160,10 @@ export default function Home() {
                 <button
                   key={v}
                   onClick={() => setAvailFilter(v)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150 ${
-                    availFilter === v
-                      ? 'bg-ember-500 text-white shadow-sm'
-                      : 'text-warm-gray hover:text-charcoal'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150 ${availFilter === v
+                    ? 'bg-ember-500 text-white shadow-sm'
+                    : 'text-warm-gray hover:text-charcoal'
+                    }`}
                 >
                   {v === 'all' ? 'All' : v.charAt(0).toUpperCase() + v.slice(1)}
                 </button>
@@ -192,11 +191,10 @@ export default function Home() {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  activeCategory === cat
-                    ? 'bg-forest-800 text-white shadow-md'
-                    : 'bg-white border border-cream-200 text-warm-gray hover:border-forest-700 hover:text-forest-700'
-                }`}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeCategory === cat
+                  ? 'bg-forest-800 text-white shadow-md'
+                  : 'bg-white border border-cream-200 text-warm-gray hover:border-forest-700 hover:text-forest-700'
+                  }`}
               >
                 {cat}
                 {cat !== 'All' && (
