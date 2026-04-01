@@ -34,9 +34,9 @@ export default function MenuCard({ item, index, onEdit, onDelete, readOnly = fal
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-cream-100">
-            <ImageOff className="text-cream-200 w-8 h-8" />
+            <ImageOff className={`w-8 h-8 ${imgError ? 'text-amber-300' : 'text-cream-200'}`} />
             <span className="text-[11px] font-medium tracking-wider uppercase text-warm-gray/50">
-              No image
+              {imgError ? 'Invalid image URL' : 'No image'}
             </span>
           </div>
         )}
@@ -44,11 +44,10 @@ export default function MenuCard({ item, index, onEdit, onDelete, readOnly = fal
         {/* Availability overlay badge */}
         <div className="absolute top-3 right-3">
           <span
-            className={`badge ${
-              item.is_available
+            className={`badge ${item.is_available
                 ? 'bg-green-50 text-green-600 border border-green-200'
                 : 'bg-red-50 text-red-500 border border-red-200'
-            }`}
+              }`}
           >
             {item.is_available ? '● Available' : '○ Unavailable'}
           </span>

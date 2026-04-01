@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Image as ImageIcon } from 'lucide-react'
+import { X, ImageOff } from 'lucide-react'
 import Image from 'next/image'
 import { MenuItem, MenuItemCreate } from '@/lib/api'
 
@@ -27,6 +27,7 @@ const empty: MenuItemCreate = {
 export default function MenuModal({ open, editItem, onClose, onSubmit, loading }: MenuModalProps) {
   const [form, setForm] = useState<MenuItemCreate>(empty)
   const [imgPreview, setImgPreview] = useState('')
+  const [imgError, setImgError] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const firstInputRef = useRef<HTMLInputElement>(null)
 
@@ -71,9 +72,10 @@ export default function MenuModal({ open, editItem, onClose, onSubmit, loading }
     })
   }
 
-  const handleImgChange = (url: string) => {
-    set('image_url', url)
-    setImgPreview(url)
+  const handleImgChange = (val: string) => {
+    setForm(f => ({ ...f, image_url: val }))
+    setImgPreview(val)
+    setImgError(false)  // reset on every change
   }
 
   if (!open) return null
@@ -170,14 +172,23 @@ export default function MenuModal({ open, editItem, onClose, onSubmit, loading }
             />
             {imgPreview && (
               <div className="mt-3 relative h-32 rounded-xl overflow-hidden border border-cream-200">
-                <Image
-                  src={imgPreview}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                  unoptimized
-                  onError={() => setImgPreview('')}
-                />
+                {imgError ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-cream-100">
+                    <ImageOff className="w-6 h-6 text-amber-400" />
+                    <span className="text-[11px] font-medium tracking-wider uppercase text-amber-500">
+                      Invalid image URL
+                    </span>
+                  </div>
+                ) : (
+                  <Image
+                    src={imgPreview}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                    onError={() => setImgError(true)}
+                  />
+                )}
               </div>
             )}
           </div>
