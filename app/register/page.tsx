@@ -25,14 +25,14 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false)
 
   const validate = () => {
-    if (!name.trim())              return 'Please enter your full name.'
-    if (!email.trim())             return 'Please enter your email.'
-    if (password.length < 6)       return 'Password must be at least 6 characters.'
+    if (!name.trim()) return 'Please enter your full name.'
+    if (!email.trim()) return 'Please enter your email.'
+    if (password.length < 6) return 'Password must be at least 6 characters.'
     if (password !== confirmPassword) return 'Passwords do not match.'
     return null
   }
 
-const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -231,9 +231,9 @@ const handleRegister = async (e: React.FormEvent) => {
 
       </div>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+      {/* <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
         <span className="font-display text-charcoal/30 text-sm font-medium">Saveur</span>
-      </div>
+      </div> */}
     </div>
   )
 }
