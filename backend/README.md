@@ -1,52 +1,71 @@
-# Restaurant-menu-backend
-Software Engineering - Group 7
-## Project Overview
-Backend for the Restaurant Management mobile application.
-This sprint covers Menu Management (FR-4) — Finance Staff can
-add, update, view, and delete menu items.
+# Saveur Backend
 
----
+FastAPI backend for the Saveur Restaurant System.
+
+## Current Scope
+
+- Auth endpoints for register, login, Google login, and password reset (admin and rider)
+- Menu CRUD endpoints
+- Order placement with inventory deduction
+- Inventory listing endpoint
 
 ## Tech Stack
-- Backend: Python + FastAPI
-- Database: MySQL
 
----
+- Python
+- FastAPI
+- MySQL
+- bcrypt
 
-## Setup Instructions
+## Project Files
 
-### Step 1 - Clone the Repository
-git clone https://github.com/YOURUSERNAME/restaurant-backend.git
-cd restaurant-backend
+- main.py: API endpoints
+- models.py: request models
+- database.py: MySQL connection
+- database_setup.sql: database schema and seed SQL
+- seed_menu.py: sample menu seed script
 
-### Step 2 - Create Virtual Environment
+## Run Backend Locally
+
+1. Open a terminal in this folder.
+2. Create and activate a virtual environment.
+
+```powershell
 python -m venv venv
 venv\Scripts\activate
+```
 
-### Step 3 - Install Packages
+3. Install dependencies.
+
+```powershell
 pip install -r requirements.txt
+```
 
-### Step 4 - Install MySQL
-- Download from https://dev.mysql.com/downloads/installer/
-- Choose Server Only
-- Set a root password and remember it
+4. Create the database schema using the setup script.
 
-### Step 5 - Create Database and Table
-- Open terminal and run: mysql -u root -p
-- Copy and run everything from database_setup.sql
+```powershell
+python setupdb.py
+```
 
-### Step 6 - Update Your Password
-- Open database.py
-- Replace YOUR_PASSWORD_HERE with your MySQL root password
+5. Update database credentials in database.py if needed.
+6. Start the API server.
 
-### Step 7 - Run the Server
+```powershell
 uvicorn main:app --reload
+```
 
-### Step 8 - Seed the Database
+7. Optional: seed menu data.
+
+```powershell
 python seed_menu.py
-You should see: Successfully inserted 30 menu items!
+python seed_users.py
+```
 
-### Step 9 - Test the API
-Open: http://localhost:8000/docs
+8. Open API docs.
 
----
+- Swagger UI: http://localhost:8000/docs
+
+## Notes
+
+- Ensure database restaurant_db exists before running setupdb.py.
+- The schema references a users table. Ensure users exists before testing auth and orders.
+- CORS is currently open for local development.

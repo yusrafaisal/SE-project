@@ -1,67 +1,63 @@
-# Saveur — Restaurant Frontend
+# Saveur Frontend
 
-Next.js 14 frontend for the Restaurant Management System (Menu Module).
+Next.js frontend for the Saveur Restaurant System.
 
 ## Tech Stack
-- **Next.js 14** (App Router)
-- **Tailwind CSS**
-- **TypeScript**
-- **Lucide React** (icons)
 
-## Setup
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- Firebase Auth
 
-### 1. Install dependencies
-```bash
+## Pages
+
+- /: admin menu management
+- /customer: customer menu view
+- /login: role-aware login
+- /register: customer registration
+- /forgot-password: password recovery flow
+- /reset-password: reset completion
+- /cart, /checkout, /payment, /orders, /order-confirmation
+
+## Run Frontend Locally
+
+1. Open a terminal in this folder.
+2. Install dependencies.
+
+```powershell
 npm install
 ```
 
-### 2. Configure API URL
-Edit `.env.local`:
-```
+3. Create or update .env.local.
+
+```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-### 3. Make sure the backend is running
-```bash
-# In the backend folder:
-uvicorn main:app --reload
-```
+4. Start the development server.
 
-### 4. Run the frontend
-```bash
+```powershell
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+5. Open:
 
-## Features
-- 🍽️ **Menu Grid** — beautiful card layout with food images
-- ➕ **Add / Edit Items** — modal form with image preview & validation
-- 🗑️ **Delete** — confirmation dialog before removing
-- 🔍 **Search** — live search across name & description
-- 🏷️ **Category Tabs** — filter by Desi, Italian, Chinese, etc.
-- ✅ **Availability Filter** — show available / unavailable only
-- 📊 **Stats Banner** — total items, available count, categories, avg price
-- 🟢 **API Status** — live indicator in navbar
-- 🔔 **Toasts** — success/error notifications
-- 💀 **Skeletons** — loading placeholders
+- http://localhost:3000
 
-## Project Structure
+## Production Build
+
+Use these commands when you want to build and run the frontend in production mode.
+
+```powershell
+npm run build
+npm run dev
 ```
-app/
-  page.tsx          — Main page (all state management)
-  layout.tsx        — Root layout
-  globals.css       — Global styles & Tailwind
 
-components/
-  Navbar.tsx        — Sticky nav with API status
-  Hero.tsx          — Dark hero banner with stats
-  MenuCard.tsx      — Individual menu item card
-  MenuModal.tsx     — Add/Edit modal
-  DeleteDialog.tsx  — Delete confirmation
-  SkeletonCard.tsx  — Loading placeholder
-  Toast.tsx         — Toast notifications
+## Related Files
 
-lib/
-  api.ts            — API client (fetch wrapper)
-```
+- app/page.tsx: admin menu page
+- app/customer/page.tsx: customer menu page
+- app/login/page.tsx: login flow
+- app/register/page.tsx: registration flow
+- lib/api.ts: menu API wrapper
+- lib/firebase.ts: Firebase setup
