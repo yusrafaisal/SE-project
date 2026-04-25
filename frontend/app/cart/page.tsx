@@ -3,31 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Minus, Plus, Trash2, ShoppingCart, ArrowRight, Home, ClipboardList, User } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingCart, ArrowRight } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-
-export interface CartItem {
-  menu_item_id: number
-  name: string
-  price: number
-  quantity: number
-  image_url?: string | null
-}
+import BottomNav from '@/components/BottomNav'
+import { CartItem, getCart, saveCart } from '@/lib/cart'
 
 const DELIVERY_FEE = 200
-
-export function getCart(): CartItem[] {
-  if (typeof window === 'undefined') return []
-  try {
-    return JSON.parse(localStorage.getItem('saveur_cart') || '[]')
-  } catch {
-    return []
-  }
-}
-
-export function saveCart(cart: CartItem[]) {
-  localStorage.setItem('saveur_cart', JSON.stringify(cart))
-}
 
 export default function CartPage() {
   const router = useRouter()
@@ -156,36 +137,5 @@ export default function CartPage() {
       {/* Bottom Nav */}
       <BottomNav active="cart" />
     </div>
-  )
-}
-
-export function BottomNav({ active }: { active: 'home' | 'orders' | 'cart' | 'profile' }) {
-  const tabs = [
-    { key: 'home', label: 'Home', icon: Home, href: '/customer' },
-    { key: 'orders', label: 'Orders', icon: ClipboardList, href: '/orders' },
-    { key: 'cart', label: 'Cart', icon: ShoppingCart, href: '/cart' },
-    { key: 'profile', label: 'Profile', icon: User, href: '#' },
-  ]
-
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-cream-200 z-50">
-      <div className="max-w-2xl mx-auto flex">
-        {tabs.map(tab => {
-          const Icon = tab.icon
-          const isActive = active === tab.key
-          return (
-            <Link
-              key={tab.key}
-              href={tab.href}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors
-                ${isActive ? 'text-ember-500' : 'text-warm-gray hover:text-charcoal'}`}
-            >
-              <Icon className="w-5 h-5" />
-              {tab.label}
-            </Link>
-          )
-        })}
-      </div>
-    </nav>
   )
 }

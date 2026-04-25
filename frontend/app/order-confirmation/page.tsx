@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, MapPin, Clock } from 'lucide-react'
-import { BottomNav } from '../cart/page'
+import BottomNav from '@/components/BottomNav'
 
 interface OrderConfirmation {
   order_id: number

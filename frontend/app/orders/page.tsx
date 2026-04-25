@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { ClipboardList, ChevronRight, Loader2 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import { BottomNav } from '../cart/page'
+import BottomNav from '@/components/BottomNav'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 

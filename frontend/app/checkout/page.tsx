@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { MapPin, ArrowRight, ChevronLeft } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import { getCart, CartItem } from '../cart/page'
-import { BottomNav } from '../cart/page'
+import BottomNav from '@/components/BottomNav'
+import { getCart, CartItem } from '@/lib/cart'
 
 const DELIVERY_FEE = 200
 

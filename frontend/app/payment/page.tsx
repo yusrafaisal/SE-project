@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CreditCard, Banknote, ChevronLeft, ArrowRight, Loader2 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import { getCart, saveCart } from '../cart/page'
-import { BottomNav } from '../cart/page'
+import BottomNav from '@/components/BottomNav'
+import { getCart, saveCart } from '@/lib/cart'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 const DELIVERY_FEE = 200

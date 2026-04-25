@@ -411,8 +411,8 @@ import MenuCard from '@/components/MenuCard'
 import SkeletonCard from '@/components/SkeletonCard'
 import ToastContainer, { ToastMessage, ToastType } from '@/components/Toast'
 import { api, MenuItem } from '@/lib/api'
-import { getCart, saveCart, CartItem } from '../cart/page'
-import { BottomNav } from '../cart/page'
+import BottomNav from '@/components/BottomNav'
+import { getCart, saveCart, CartItem } from '@/lib/cart'
 
 export default function CustomerMenuPage() {
     const router = useRouter()
