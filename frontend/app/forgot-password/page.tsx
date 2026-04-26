@@ -88,8 +88,8 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setError('')
 
-    if (newPassword.length < 8) {
-      setError('Password must be at least 8 characters.')
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters.')
       return
     }
     if (newPassword !== confirmPassword) {
@@ -176,7 +176,7 @@ export default function ForgotPasswordPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="input-field pr-11"
-                  placeholder="Min. 8 characters"
+                  placeholder="Min. 6 characters"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   autoComplete="new-password"
