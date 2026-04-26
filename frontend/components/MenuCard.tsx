@@ -111,7 +111,7 @@ interface MenuCardProps {
   index: number
   onEdit?: (item: MenuItem) => void
   onDelete?: (item: MenuItem) => void
-  onAddToCart?: (item: MenuItem) => void
+  onAddToCart?: (item: MenuItem) => boolean | Promise<boolean>
   readOnly?: boolean
   outOfStock?: boolean
 }
@@ -120,9 +120,10 @@ export default function MenuCard({ item, index, onEdit, onDelete, onAddToCart, r
   const [imgError, setImgError] = useState(false)
   const [added, setAdded] = useState(false)
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!onAddToCart) return
-    onAddToCart(item)
+    const addedToCart = await onAddToCart(item)
+    if (!addedToCart) return
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)
   }

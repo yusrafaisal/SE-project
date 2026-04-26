@@ -480,9 +480,37 @@ export default function CustomerMenuPage() {
         })
     }, [items, search, activeCategory])
 
-    const addToCart = useCallback((item: MenuItem) => {
+    const getLiveStock = useCallback(async (itemId: number) => {
+        const res = await fetch(`${API_BASE}/inventory/stock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item_ids: [itemId] }),
+        })
+        if (!res.ok) throw new Error('stock-check-failed')
+        const data = await res.json()
+        const available = data[String(itemId)]
+        if (typeof available !== 'number') throw new Error('stock-check-failed')
+        setStockMap(prev => ({ ...prev, [itemId]: available }))
+        return available
+    }, [])
+
+    const addToCart = useCallback(async (item: MenuItem) => {
         const current = getCart()
         const existing = current.find(c => c.menu_item_id === item.id)
+        const currentQty = existing?.quantity ?? 0
+
+        try {
+            const available = await getLiveStock(item.id)
+
+            if (currentQty + 1 > available) {
+                toast(`Insufficient stock: only ${available} left for ${item.name}.`, 'error')
+                return false
+            }
+        } catch {
+            toast('Could not verify stock right now. Please try again.', 'error')
+            return false
+        }
+
         let updated: CartItem[]
         if (existing) {
             updated = current.map(c =>
@@ -500,7 +528,8 @@ export default function CustomerMenuPage() {
         saveCart(updated)
         setCart(updated)
         toast(`${item.name} added to cart`, 'success')
-    }, [toast])
+        return true
+    }, [getLiveStock, toast])
 
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -584,6 +613,12 @@ export default function CustomerMenuPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {filtered.map((item, i) => (
+                            (() => {
+                                const available = stockMap[item.id]
+                                const inCart = cart.find(c => c.menu_item_id === item.id)?.quantity ?? 0
+                                const outOfStock = available === 0 || (typeof available === 'number' && inCart >= available)
+
+                                return (
                             // <MenuCard
                             //     key={item.id}
                             //     item={item}
@@ -597,8 +632,10 @@ export default function CustomerMenuPage() {
                                 index={i}
                                 readOnly
                                 onAddToCart={addToCart}
-                                outOfStock={stockMap[(item.id)] === 0}
+                                outOfStock={outOfStock}
                             />
+                                )
+                            })()
                         ))}
                     </div>
                 )}

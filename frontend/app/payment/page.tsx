@@ -9,7 +9,7 @@ import { getCart, saveCart } from '@/lib/cart'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 const DELIVERY_FEE = 200
-
+ 
 export default function PaymentPage() {
   const router = useRouter()
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'cash'>('card')
