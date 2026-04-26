@@ -9,18 +9,45 @@ import BottomNav from '@/components/BottomNav'
 import { CartItem, getCart, saveCart } from '@/lib/cart'
 
 const DELIVERY_FEE = 200
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export default function CartPage() {
   const router = useRouter()
   const [cart, setCart] = useState<CartItem[]>([])
   const [mounted, setMounted] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setCart(getCart())
     setMounted(true)
   }, [])
 
-  const updateQty = (id: number, delta: number) => {
+  // const updateQty = (id: number, delta: number) => {
+  //   const updated = cart.map(item =>
+  //     item.menu_item_id === id
+  //       ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+  //       : item
+  //   )
+  //   setCart(updated)
+  //   saveCart(updated)
+  // }
+  const updateQty = async (id: number, delta: number) => {
+    if (delta > 0) {
+      const res = await fetch(`${API_BASE}/inventory/stock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item_ids: [id] }),
+      })
+      const data = await res.json()
+      // console.log('data:', data, 'id:', id, 'String(id):', String(id))
+      const available = data[String(id)]
+      const currentQty = cart.find(i => i.menu_item_id === id)?.quantity ?? 0
+      if (available !== undefined && currentQty + 1 > available) {
+        setError(`Insufficient stock: only ${available} left for this item.`)
+        return
+      }
+    }
+    setError('')
     const updated = cart.map(item =>
       item.menu_item_id === id
         ? { ...item, quantity: Math.max(1, item.quantity + delta) }
@@ -122,6 +149,12 @@ export default function CartPage() {
                 </span>
               </div>
             </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+                {error}
+              </div>
+            )}
 
             {/* Checkout Button */}
             <button
