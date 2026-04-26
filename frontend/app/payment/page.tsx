@@ -84,16 +84,16 @@ export default function PaymentPage() {
 
       const data = await res.json()
 
-      // if (!res.ok) {
-      //   const detail = data.detail
-      //   if (typeof detail === 'object' && detail.insufficient_items) {
-      //     const names = detail.insufficient_items.map((i: { item: string }) => i.item).join(', ')
-      //     setError(`Insufficient stock for: ${names}`)
-      //   } else {
-      //     setError(typeof detail === 'string' ? detail : 'Order failed. Please try again.')
-      //   }
-      //   return
-      // }
+      if (!res.ok) {
+        const detail = data.detail
+        if (typeof detail === 'object' && detail.insufficient_items) {
+          const names = detail.insufficient_items.map((i: { item: string }) => i.item).join(', ')
+          setError(`Insufficient stock for: ${names}`)
+        } else {
+          setError(typeof detail === 'string' ? detail : 'Order failed. Please try again.')
+        }
+        return
+      }
 
       // Clear cart and checkout data
       saveCart([])
