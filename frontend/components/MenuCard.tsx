@@ -99,8 +99,6 @@
 //   )
 // }
 
-
-
 'use client'
 
 import { useState } from 'react'
@@ -115,9 +113,10 @@ interface MenuCardProps {
   onDelete?: (item: MenuItem) => void
   onAddToCart?: (item: MenuItem) => void
   readOnly?: boolean
+  outOfStock?: boolean
 }
 
-export default function MenuCard({ item, index, onEdit, onDelete, onAddToCart, readOnly = false }: MenuCardProps) {
+export default function MenuCard({ item, index, onEdit, onDelete, onAddToCart, readOnly = false, outOfStock = false }: MenuCardProps) {
   const [imgError, setImgError] = useState(false)
   const [added, setAdded] = useState(false)
 
@@ -153,12 +152,20 @@ export default function MenuCard({ item, index, onEdit, onDelete, onAddToCart, r
           </div>
         )}
 
-        <div className="absolute top-3 right-3">
+        {/* <div className="absolute top-3 right-3">
           <span className={`badge ${item.is_available
             ? 'bg-green-50 text-green-600 border border-green-200'
             : 'bg-red-50 text-red-500 border border-red-200'
           }`}>
             {item.is_available ? '● Available' : '○ Unavailable'}
+          </span>
+        </div> */}
+        <div className="absolute top-3 right-3">
+          <span className={`badge ${item.is_available && !outOfStock
+            ? 'bg-green-50 text-green-600 border border-green-200'
+            : 'bg-red-50 text-red-500 border border-red-200'
+            }`}>
+            {item.is_available && !outOfStock ? '● Available' : '○ Unavailable'}
           </span>
         </div>
 
@@ -185,7 +192,7 @@ export default function MenuCard({ item, index, onEdit, onDelete, onAddToCart, r
         </p>
 
         {/* Customer: Add to Cart */}
-        {readOnly && onAddToCart && item.is_available && (
+        {readOnly && onAddToCart && item.is_available && !outOfStock &&  (
           <button
             onClick={handleAddToCart}
             className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
@@ -225,3 +232,4 @@ export default function MenuCard({ item, index, onEdit, onDelete, onAddToCart, r
     </div>
   )
 }
+
