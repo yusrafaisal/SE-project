@@ -75,7 +75,7 @@ function ResetPasswordForm() {
                     <div className="border border-dashed border-cream-200 rounded-xl px-4 py-3">
                         <p className="text-sm text-warm-gray font-light">Your password has been reset successfully.</p>
                     </div>
-                    <Link href="/login">
+                    <Link href="/">
                         <button className="w-full border border-cream-200 rounded-xl px-4 py-3 text-sm font-semibold text-charcoal hover:border-ember-300 hover:text-ember-500 transition-all duration-200">
                             Back to Login
                         </button>
@@ -144,7 +144,7 @@ function ResetPasswordForm() {
 
             <div className="border-t border-dashed border-cream-200 mx-8" />
             <div className="px-8 py-5 text-center">
-                <Link href="/login" className="text-sm text-charcoal hover:text-ember-500 underline underline-offset-2 transition-colors">
+                <Link href="/" className="text-sm text-charcoal hover:text-ember-500 underline underline-offset-2 transition-colors">
                     Back to Login
                 </Link>
             </div>

@@ -330,7 +330,7 @@ export default function RegisterPage() {
       await createUserWithEmailAndPassword(auth, email.trim(), password)
 
       setSuccess(true)
-      setTimeout(() => router.push('/login'), 2000)
+      setTimeout(() => router.push('/'), 2000)
 
     } catch (err: unknown) {
       if (err instanceof Error && 'code' in err) {
@@ -505,7 +505,7 @@ export default function RegisterPage() {
         <div className="px-8 py-5 text-center space-y-1">
           <p className="text-sm text-warm-gray font-light">Already have an account?</p>
           <Link
-            href="/login"
+            href="/"
             className="text-sm text-ember-500 hover:text-ember-600 underline underline-offset-2 transition-colors"
           >
             Back to Login

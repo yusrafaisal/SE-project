@@ -544,7 +544,7 @@ export default function LoginPage() {
     }
 
     localStorage.setItem('saveur_user', JSON.stringify(data.user))
-    if (role === 'admin') router.push('/')
+    if (role === 'admin') router.push('/admin')
     else router.push('/rider-dashboard')
   }
 

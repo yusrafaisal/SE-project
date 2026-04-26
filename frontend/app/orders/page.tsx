@@ -58,7 +58,7 @@ export default function OrdersPage() {
     try {
       const user = JSON.parse(localStorage.getItem('saveur_user') || '{}')
       if (!user.id) {
-        router.push('/login')
+        router.push('/')
         return
       }
       const res = await fetch(`${API_BASE}/orders/${user.id}`)

@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
                 Your password has been reset successfully.
               </p>
             </div>
-            <Link href="/login">
+            <Link href="/">
               <button className="w-full border-2 border-charcoal rounded-xl px-4 py-3 text-sm font-semibold text-charcoal hover:bg-charcoal hover:text-white transition-all duration-200 mt-2">
                 Back to Login
               </button>
@@ -344,7 +344,7 @@ export default function ForgotPasswordPage() {
         <div className="border-t border-dashed border-cream-200 mx-8" />
         <div className="px-8 py-5 text-center">
           <Link
-            href="/login"
+            href="/"
             className="text-sm text-charcoal hover:text-ember-500 underline underline-offset-2 transition-colors"
           >
             Back to Login

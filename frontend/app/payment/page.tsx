@@ -61,7 +61,7 @@ export default function PaymentPage() {
       const user = JSON.parse(localStorage.getItem('saveur_user') || '{}')
 
       if (!user.id) {
-        router.push('/login')
+        router.push('/')
         return
       }
 
