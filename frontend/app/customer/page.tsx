@@ -399,8 +399,6 @@
 //         </div>
 //     )
 // }
-
-
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
@@ -414,12 +412,15 @@ import { api, MenuItem } from '@/lib/api'
 import BottomNav from '@/components/BottomNav'
 import { getCart, saveCart, CartItem } from '@/lib/cart'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 export default function CustomerMenuPage() {
     const router = useRouter()
     const [items, setItems] = useState<MenuItem[]>([])
     const [loading, setLoading] = useState(true)
     const [apiOnline, setApiOnline] = useState<boolean | null>(null)
     const [cart, setCart] = useState<CartItem[]>([])
+    const [stockMap, setStockMap] = useState<Record<number, number>>({})
 
     const [search, setSearch] = useState('')
     const [activeCategory, setActiveCategory] = useState('All')
@@ -440,6 +441,16 @@ export default function CustomerMenuPage() {
         try {
             const data = await api.getMenu()
             setItems(data)
+            const ids = data.map((i: MenuItem) => i.id)
+            const stockRes = await fetch(`${API_BASE}/inventory/stock`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item_ids: ids }),
+            })
+            if (stockRes.ok) {
+                const stockData = await stockRes.json()
+                setStockMap(stockData)
+            }
             setApiOnline(true)
         } catch {
             setApiOnline(false)
@@ -573,12 +584,20 @@ export default function CustomerMenuPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {filtered.map((item, i) => (
+                            // <MenuCard
+                            //     key={item.id}
+                            //     item={item}
+                            //     index={i}
+                            //     readOnly
+                            //     onAddToCart={addToCart}
+                            // />
                             <MenuCard
                                 key={item.id}
                                 item={item}
                                 index={i}
                                 readOnly
                                 onAddToCart={addToCart}
+                                outOfStock={stockMap[(item.id)] === 0}
                             />
                         ))}
                     </div>
@@ -600,3 +619,4 @@ export default function CustomerMenuPage() {
         </div>
     )
 }
+
