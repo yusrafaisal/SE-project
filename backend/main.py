@@ -628,4 +628,21 @@ def get_inventory():
     conn.close()
     return items
 
+@app.post("/inventory/stock")
+def check_stock(data: dict):
+    item_ids = data.get("item_ids", [])
+    if not item_ids:
+        return {}
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    placeholders = ", ".join(["%s"] * len(item_ids))
+    cursor.execute(
+        f"SELECT menu_item_id, quantity FROM inventory WHERE menu_item_id IN ({placeholders})",
+        tuple(item_ids)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return {row["menu_item_id"]: row["quantity"] for row in rows}
+
+
 
