@@ -244,7 +244,7 @@ from database import get_connection
 from models import (
     MenuItemCreate, MenuItemUpdate,
     UserRegister, UserLogin, GoogleLogin,
-    PlaceOrder
+    PlaceOrder, CheckIdentifier      # ← add CheckIdentifier here
 )
 import bcrypt
 
@@ -313,6 +313,32 @@ def login(credentials: UserLogin):
             "role": user["role"]
         }
     }
+
+
+@app.post("/auth/check-identifier")
+def check_identifier(data: CheckIdentifier):
+    """
+    Step 1 of two-step login: check if the email or phone exists in DB.
+    Returns 200 if found, 404 if not. No sensitive data returned.
+    """
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if data.email:
+        cursor.execute("SELECT id FROM users WHERE email = %s", (data.email,))
+    elif data.phone:
+        cursor.execute("SELECT id FROM users WHERE phone = %s", (data.phone,))
+    else:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Provide email or phone")
+
+    user = cursor.fetchone()
+    conn.close()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found")
+
+    return {"exists": True}
 
 
 @app.post("/auth/reset-password")

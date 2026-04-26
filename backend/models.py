@@ -124,4 +124,11 @@ class PlaceOrder(BaseModel):
     delivery_address: str
     payment_method: str
     special_instructions: Optional[str] = None
+
+
+# ── Check Identifier Model ────────────────────────────────────────────────────
+
+class CheckIdentifier(BaseModel):
+    email: Optional[str] = None
+    phone: Optional[str] = None
     
