@@ -45,7 +45,9 @@
 #     email: str
 #     uid: str
 
-from pydantic import BaseModel
+import re
+
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 
 
@@ -76,6 +78,22 @@ class UserRegister(BaseModel):
     email: str
     phone: str
     password: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        email = value.strip().lower()
+        if not re.match(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$", email):
+            raise ValueError("Enter a valid email address")
+        return email
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, value: str) -> str:
+        phone = re.sub(r"[\s\-().]", "", value.strip())
+        if not re.match(r"^(?:03\d{9}|\+923\d{9})$", phone):
+            raise ValueError("Phone number must be 03XXXXXXXXX or +923XXXXXXXXX")
+        return phone
 
 class UserLogin(BaseModel):
     email: Optional[str] = None

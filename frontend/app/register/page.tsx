@@ -241,9 +241,6 @@
 
 'use client'
 
-import { auth } from '@/lib/firebase'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
-
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -251,23 +248,20 @@ import { AlertTriangle, Eye, EyeOff, CheckCircle } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-// Basic phone validation — accepts formats like +92XXXXXXXXXX, 03XXXXXXXXX, etc.
-function isValidPhone(phone: string) {
-  // Strip spaces and dashes for validation
-  const stripped = phone.replace(/[\s\-().]/g, '')
-  // Must be 10-15 digits, optionally starting with +
-  return /^\+?[0-9]{10,15}$/.test(stripped)
+function isValidEmail(email: string) {
+  return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(email.trim())
 }
 
-// Normalise to E.164 (+92XXXXXXXXX) — assumes Pakistani numbers for bare 03XX format
-// Adjust or remove this if your users are international
+function isValidPhone(phone: string) {
+  const stripped = phone.replace(/[\s\-().]/g, '')
+  return /^(?:03\d{9}|\+923\d{9})$/.test(stripped)
+}
+
 function normalisePhone(phone: string) {
   const stripped = phone.replace(/[\s\-().]/g, '')
-  if (stripped.startsWith('0') && stripped.length === 11) {
-    // 03XX XXXXXXX → +92XXXXXXXXXX
+  if (/^03\d{9}$/.test(stripped)) {
     return '+92' + stripped.slice(1)
   }
-  if (!stripped.startsWith('+')) return '+' + stripped
   return stripped
 }
 
@@ -288,6 +282,11 @@ export default function RegisterPage() {
   const validate = () => {
     if (!name.trim()) return 'Please enter your full name.'
     if (!email.trim()) return 'Please enter your email.'
+    if (!isValidEmail(email)) return 'Please enter a valid email address.'
+    if (!phone.trim()) return 'Please enter your phone number.'
+    if (!isValidPhone(phone)) {
+      return 'Phone number must be 03XXXXXXXXX or +923XXXXXXXXX.'
+    }
     if (password.length < 6) return 'Password must be at least 6 characters.'
     if (password !== confirmPassword) return 'Passwords do not match.'
     return null
@@ -325,9 +324,6 @@ export default function RegisterPage() {
         }
         return
       }
-
-      // Create in Firebase so forgot-password (email flow) works
-      await createUserWithEmailAndPassword(auth, email.trim(), password)
 
       setSuccess(true)
       setTimeout(() => router.push('/'), 2000)
@@ -419,6 +415,9 @@ export default function RegisterPage() {
               onChange={e => setEmail(e.target.value)}
               autoComplete="email"
             />
+            <p className="text-xs text-warm-gray/70 font-light pl-0.5">
+              Enter a valid email format like name@example.com
+            </p>
           </div>
 
           {/* Phone */}
@@ -433,7 +432,7 @@ export default function RegisterPage() {
               autoComplete="tel"
             />
             <p className="text-xs text-warm-gray/70 font-light pl-0.5">
-              Used for SMS password recovery
+              Must be 03XXXXXXXXX or +923XXXXXXXXX
             </p>
           </div>
 

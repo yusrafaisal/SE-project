@@ -244,9 +244,16 @@ from database import get_connection
 from models import (
     MenuItemCreate, MenuItemUpdate,
     UserRegister, UserLogin, GoogleLogin,
-    PlaceOrder, CheckIdentifier      # ← add CheckIdentifier here
+    PlaceOrder, CheckIdentifier, SendOTP, VerifyOTP, ResetPasswordOTP, PhoneLookup
 )
 import bcrypt
+import random
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from datetime import datetime, timedelta
+import firebase_admin
+from firebase_admin import credentials, auth as firebase_auth
 
 app = FastAPI()
 
@@ -256,6 +263,43 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if not firebase_admin._apps:
+        cred = credentials.Certificate("serviceAccountKey.json")
+        firebase_admin.initialize_app(cred)
+
+GMAIL_USER = "saveur999@gmail.com"
+GMAIL_APP_PASS = "tpqclbfuerhulrsv"
+
+otp_store: dict = {}
+
+
+def send_otp_email(to_email: str, otp: str):
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Your Saveur Password Reset Code"
+        msg["From"] = GMAIL_USER
+        msg["To"] = to_email
+
+        html = f"""
+        <div style="font-family: Georgia, serif; max-width: 420px; margin: 0 auto; padding: 32px; background: #faf9f7; border-radius: 16px;">
+            <h2 style="color: #2b2b2b; font-size: 22px; margin-bottom: 8px;">Password Reset</h2>
+            <p style="color: #777; font-size: 14px; margin-bottom: 24px;">
+                Use the code below to reset your Saveur password. It expires in <strong>10 minutes</strong>.
+            </p>
+            <div style="background: #fff; border: 1px dashed #e0dbd4; border-radius: 12px; padding: 24px; text-align: center;">
+                <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #2b2b2b;">{otp}</span>
+            </div>
+            <p style="color: #aaa; font-size: 12px; margin-top: 24px;">
+                If you didn't request this, you can safely ignore this email.
+            </p>
+        </div>
+        """
+
+        msg.attach(MIMEText(html, "html"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(GMAIL_USER, GMAIL_APP_PASS)
+                server.sendmail(GMAIL_USER, to_email, msg.as_string())
 
 
 # ══════════════════════════════════════════════════════
@@ -270,14 +314,30 @@ def register(user: UserRegister):
     if cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=409, detail="Email already registered")
+    cursor.execute("SELECT id FROM users WHERE phone = %s", (user.phone,))
+    if cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=409, detail="Phone number already registered")
     password_hash = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt()).decode()
     cursor.execute(
-        "INSERT INTO users (name, email, password_hash, role) VALUES (%s, %s, %s, 'customer')",
-        (user.name, user.email, password_hash)
+        "INSERT INTO users (name, email, phone, password_hash, role) VALUES (%s, %s, %s, %s, 'customer')",
+        (user.name, user.email, user.phone, password_hash)
     )
     conn.commit()
     new_id = cursor.lastrowid
     conn.close()
+
+    try:
+        firebase_auth.create_user(
+            email=user.email,
+            password=user.password,
+            display_name=user.name,
+        )
+    except firebase_auth.EmailAlreadyExistsError:
+        pass
+    except Exception:
+        pass
+
     return {
         "message": "Account created successfully",
         "user": {
@@ -293,10 +353,19 @@ def register(user: UserRegister):
 def login(credentials: UserLogin):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute(
-        "SELECT * FROM users WHERE email = %s AND role = %s",
-        (credentials.email, credentials.role)
-    )
+    if credentials.email:
+        cursor.execute(
+            "SELECT * FROM users WHERE email = %s AND role = %s",
+            (credentials.email, credentials.role)
+        )
+    elif credentials.phone:
+        cursor.execute(
+            "SELECT * FROM users WHERE phone = %s AND role = %s",
+            (credentials.phone, credentials.role)
+        )
+    else:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Email or phone required")
     user = cursor.fetchone()
     conn.close()
     if not user:
@@ -313,6 +382,20 @@ def login(credentials: UserLogin):
             "role": user["role"]
         }
     }
+
+
+@app.post("/auth/lookup-by-phone")
+def lookup_by_phone(body: PhoneLookup):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT email FROM users WHERE phone = %s", (body.phone,))
+    user = cursor.fetchone()
+    conn.close()
+
+    if not user:
+        raise HTTPException(status_code=404)
+
+    return {"email": user["email"]}
 
 
 @app.post("/auth/check-identifier")
@@ -341,6 +424,96 @@ def check_identifier(data: CheckIdentifier):
     return {"exists": True}
 
 
+@app.post("/auth/send-otp")
+def send_otp(body: SendOTP):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id FROM users WHERE email = %s", (body.email,))
+    user = cursor.fetchone()
+    conn.close()
+
+    if not user:
+        return {"message": "If that email is registered, an OTP has been sent."}
+
+    otp = str(random.randint(100000, 999999))
+    otp_store[body.email] = {
+        "otp": otp,
+        "expires_at": datetime.utcnow() + timedelta(minutes=10)
+    }
+
+    try:
+        send_otp_email(body.email, otp)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+    return {"message": "If that email is registered, an OTP has been sent."}
+
+
+@app.post("/auth/verify-otp")
+def verify_otp(body: VerifyOTP):
+    entry = otp_store.get(body.email)
+
+    if not entry:
+        raise HTTPException(status_code=400, detail="No OTP requested for this email.")
+
+    if datetime.utcnow() > entry["expires_at"]:
+        otp_store.pop(body.email, None)
+        raise HTTPException(status_code=400, detail="OTP has expired. Please request a new one.")
+
+    if entry["otp"] != body.otp:
+        raise HTTPException(status_code=400, detail="Incorrect OTP.")
+
+    return {"message": "OTP verified."}
+
+
+@app.post("/auth/reset-password-otp")
+def reset_password_otp(body: ResetPasswordOTP):
+    entry = otp_store.get(body.email)
+
+    if not entry:
+        raise HTTPException(status_code=400, detail="No OTP requested for this email.")
+
+    if datetime.utcnow() > entry["expires_at"]:
+        otp_store.pop(body.email, None)
+        raise HTTPException(status_code=400, detail="OTP has expired. Please request a new one.")
+
+    if entry["otp"] != body.otp:
+        raise HTTPException(status_code=400, detail="Incorrect OTP.")
+
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+
+    new_hash = bcrypt.hashpw(body.new_password.encode(), bcrypt.gensalt()).decode()
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT role FROM users WHERE email = %s", (body.email,))
+    user = cursor.fetchone()
+
+    cursor.execute(
+        "UPDATE users SET password_hash = %s WHERE email = %s",
+        (new_hash, body.email)
+    )
+    conn.commit()
+    conn.close()
+
+    if user and user["role"] == "customer":
+        try:
+            firebase_user = firebase_auth.get_user_by_email(body.email)
+            firebase_auth.update_user(firebase_user.uid, password=body.new_password)
+        except firebase_auth.UserNotFoundError:
+            try:
+                firebase_auth.create_user(email=body.email, password=body.new_password)
+            except Exception as e:
+                print(f"Firebase user creation during reset failed: {e}")
+        except Exception as e:
+            print(f"Firebase password update failed: {e}")
+
+    otp_store.pop(body.email, None)
+
+    return {"message": "Password updated successfully."}
+
+
 @app.post("/auth/reset-password")
 def reset_password(data: dict):
     email = data.get("email")
@@ -349,21 +522,31 @@ def reset_password(data: dict):
         raise HTTPException(status_code=400, detail="Email and new password are required")
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute(
-        "SELECT * FROM users WHERE email = %s AND role IN ('admin', 'rider')",
-        (email,)
-    )
+    cursor.execute("SELECT role FROM users WHERE email = %s", (email,))
     user = cursor.fetchone()
     if not user:
         conn.close()
         return {"message": "ok"}
     new_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
     cursor.execute(
-        "UPDATE users SET password_hash = %s WHERE email = %s AND role IN ('admin', 'rider')",
+        "UPDATE users SET password_hash = %s WHERE email = %s",
         (new_hash, email)
     )
     conn.commit()
     conn.close()
+
+    if user["role"] == "customer":
+        try:
+            firebase_user = firebase_auth.get_user_by_email(email)
+            firebase_auth.update_user(firebase_user.uid, password=new_password)
+        except firebase_auth.UserNotFoundError:
+            try:
+                firebase_auth.create_user(email=email, password=new_password)
+            except Exception as e:
+                print(f"Firebase user creation during reset failed: {e}")
+        except Exception as e:
+            print(f"Firebase password update failed: {e}")
+
     return {"message": "Password updated"}
 
 

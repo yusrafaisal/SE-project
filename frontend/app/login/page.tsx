@@ -371,7 +371,6 @@
 
 'use client'
 
-import { signInWithEmailAndPassword } from 'firebase/auth'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -454,35 +453,18 @@ export default function LoginPage() {
       // Step 1 — does this phone exist in DB?
       await checkIdentifierExists(undefined, phone)
 
-      // Step 2 — look up email linked to this phone
-      const lookupRes = await fetch(`${API_URL}/auth/lookup-by-phone`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      })
-
-      if (!lookupRes.ok) {
-        throw new LoginError('Invalid email or phone number.', 'identifier')
-      }
-
-      const { email: emailForPhone } = await lookupRes.json()
-
-      // Step 3 — attempt Firebase sign-in; if this fails → wrong password
-      try {
-        await signInWithEmailAndPassword(auth, emailForPhone, password)
-      } catch {
-        throw new LoginError('Invalid password.', 'password')
-      }
-
-      // Step 4 — get full profile from backend
+      // Step 2 — verify password against the backend
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password: '__firebase_verified__', role }),
+        body: JSON.stringify({ phone, password, role }),
       })
 
       const data = await res.json()
-      if (!res.ok) throw new LoginError(data.detail || 'Login failed', 'general')
+      if (!res.ok) {
+        if (res.status === 401) throw new LoginError('Invalid password.', 'password')
+        throw new LoginError(data.detail || 'Login failed', 'general')
+      }
 
       localStorage.setItem('saveur_user', JSON.stringify(data.user))
       router.push('/customer')
@@ -493,22 +475,18 @@ export default function LoginPage() {
       // Step 1 — does this email exist in DB?
       await checkIdentifierExists(identifier)
 
-      // Step 2 — attempt Firebase sign-in; if this fails → wrong password
-      try {
-        await signInWithEmailAndPassword(auth, identifier, password)
-      } catch {
-        throw new LoginError('Invalid password.', 'password')
-      }
-
-      // Step 3 — get full profile from backend
+      // Step 2 — verify password against the backend
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: identifier, password: '__firebase_verified__', role }),
+        body: JSON.stringify({ email: identifier, password, role }),
       })
 
       const data = await res.json()
-      if (!res.ok) throw new LoginError(data.detail || 'Login failed', 'general')
+      if (!res.ok) {
+        if (res.status === 401) throw new LoginError('Invalid password.', 'password')
+        throw new LoginError(data.detail || 'Login failed', 'general')
+      }
 
       localStorage.setItem('saveur_user', JSON.stringify(data.user))
       router.push('/customer')
